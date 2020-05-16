@@ -34,3 +34,24 @@ module.exports = global[FOO_KEY];
 
 ## JS私有变量
 https://juejin.im/post/5c25faf3f265da61380f4b17
+
+## 1.函数
+### 1.1 函数的3种定义方法**
+   1.1.1 函数声明
+   ```javascript
+    function getSum() {}
+    function () {} //匿名函数
+
+    () => {}
+   ```
+   1.1.2 函数表达式 (函数字面量)
+   ```javascript
+    var sum = function() {}
+
+    let sum = () => {}
+   ```
+   1.1.3 构造函数
+   ```javascript
+   const sum = new Function('a', 'b', 'return a + b')
+   ```
+1.1.4 三种方式对比
