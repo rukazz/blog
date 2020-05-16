@@ -1,0 +1,58 @@
+<div class="parent">
+  <div class="left">
+    left
+  </div>
+  <div class="content">
+    content
+  </div>
+  <div class="right">
+    right
+  </div>
+</div>
+
+<style>
+  /* position
+  .parent {
+    position: relative;
+  }
+  .left {
+    position: absolute;
+    width: 100px;
+    left: 0;
+    top: 0;
+    background-color: red;
+  }
+  .right {
+    position:absolute;
+    width: 100px;
+    right: 0;
+    top: 0;
+    background-color: green;
+  }
+  .content {
+    margin: 0 100px;
+    background-color: hotpink
+  } */
+  /* flex */
+.parent {
+  display: flex;
+}
+.left{
+  flex-basis: 100px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  background: red;
+}
+.right {
+  flex-basis: 100px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  background: rosybrown;
+}
+.content {
+  flex-grow: 1;
+  flex-shrink: 1;
+  background: seagreen;
+}
+
+</style>
