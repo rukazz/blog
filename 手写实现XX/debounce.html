@@ -1,0 +1,33 @@
+<div class="scroll-box">
+  <div class="scroll-item"></div>
+</div>
+<style>
+  .scroll-box {
+    width: 100%;
+    height: 500px;
+    background: blue;
+    overflow: auto;
+  }
+  .scroll-item {
+    height: 1000px;
+    width: 100%;
+  }
+</style>
+<script>
+  const debounce = function(fn, delay) {
+    let timeout = null;
+    return function() {
+      if (timeout) clearTimeout(timeout); //如果多次触发将上次的清理掉
+      timeout = setTimeout(() => {
+        fn.apply(arguments)
+        timeout = null;
+      }, delay)
+    }
+  }
+
+  function handle() {
+    console.log('handle here?', arguments)
+    console.log(this)
+  }
+  document.getElementsByClassName('scroll-box')[0].addEventListener('scroll', debounce(handle,1000))
+</script>

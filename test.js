@@ -1,14 +1,10 @@
-function Parent(name) {
-    this.name = name
-}
- Parent.prototype.sayName = function () {
-     console.log(this.name)
- }
+(function(){
+    Array.prototype.push.call(arguments, '3')
+    // console.log(arguments)
+})('1', '2')
+let arr1 = [1, 2]
+let arr2 = [3, 4, 6,7]
+Array.prototype.push.apply(arr1, arr2)
 
- function Child(name, age) {
-     Parent.call(this, name)
-     this.age = age
- }
-Child.prototype = Object.create(Parent.prototype)
-let child = new Child('mike', 11)
-child.sayName()
+
+console.log(Object.prototype.toString.call([]))

@@ -1,0 +1,34 @@
+<div class="scroll-box">
+  <div class="scroll-item"></div>
+</div>
+
+<style>
+.scroll-box {
+  background: blue;
+  height: 500px;
+  width: 100%;
+  overflow: auto;
+}
+.scroll-item {
+  width: 100%;
+  height: 1000px;
+}
+</style>
+
+<script>
+  const throttle = function(fn, delay) {
+    let timeout = null;
+    return function() {
+       if (!timeout) {
+      timeout = setTimeout(() => {
+        fn.apply(this, arguments)
+        timeout = null;
+      }, delay)
+     }
+    }
+  }
+  const handle = function() {
+    console.log("argument", arguments)
+  }
+  document.getElementsByClassName('scroll-box')[0].addEventListener('scroll', throttle(handle, 1000))
+</script>
