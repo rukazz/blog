@@ -1,35 +1,16 @@
-let a = {},
-  defaultName = "value 2";
-Object.defineProperty(a, "name", {
-  get() {
-    return defaultName;
-  },
-  set(value) {
-    defaultName = value;
-  },
+let a = Math.max.apply(this, [2, 6, 7, 10]);
+let d = [2, 10, 45].reduce((prev, cur) => {
+  return prev + cur;
 });
 
-// console.log(a.name)
-
-// a.name = 'test2'
-// console.log(a.name)
-
-let b = {},
-  bValue = 1;
-Object.defineProperty(b, "arr", {
-  set: function (value) {
-    bValue = value;
-    console.log("setted", bValue);
-  },
-  get: function () {
-    return bValue;
-  },
-});
-
-console.log(b.arr)
-b.arr = []
-b.arr = [1,2,3]
-b.arr[1] = 10
-b.arr.push(90)
-b.arr.length = 5
-console.log(b.arr)
+function sum(arr) {
+  if (arr.length == 0) {
+    return 0;
+  } else if (arr.length == 1) {
+    return arr[0];
+  } else {
+    return arr[0] + sum(arr.slice(1));
+  }
+}
+let arr = [1, 2, 3, 4];
+console.log(arr.slice(0));

@@ -991,3 +991,384 @@ a.b;//[1,10,3,4,undefined];
 > 必须深层遍历嵌套的对象,因为defineProperty只能劫持对象的属性,因此我们需要对每个对象的每个属性进行遍历，如果属性值也是对象那么需要深度遍历,显然能劫持一个完整的对象是更好的选择
 
 
+### 2.6.2 proxy
+1. ES6出来的方法,实质是对对象做了一个拦截,并提供了13个处理方法
+
+2. 两个参数:对象和行为函数
+```javascript
+let handler = {
+    get(target, key, receiver) {
+      console.log("get", key);
+      return Reflect.get(target, key, receiver);
+    },
+    set(target, key, value, receiver) {
+      console.log("set", key, value);
+      return Reflect.set(target, key, value, receiver);
+    }
+  };
+  let proxy = new Proxy(obj, handler);
+  proxy.name = "李四";
+  proxy.age = 24;
+
+```
+涉及到多级对象或者多级数组
+```javascript
+  //传递两个参数，一个是object, 一个是proxy的handler
+//如果是不是嵌套的object，直接加上proxy返回，如果是嵌套的object，那么进入addSubProxy进行递归。 
+function toDeepProxy(object, handler) {
+    if (!isPureObject(object)) addSubProxy(object, handler); 
+    return new Proxy(object, handler);
+
+//这是一个递归函数，目的是遍历object的所有属性，如果不是pure object,那么就继续遍历object的属性的属性，如果是pure object那么就加上proxy
+    function addSubProxy(object, handler) {
+        for (let prop in object) {
+            if ( typeof object[prop] == 'object') {
+                if (!isPureObject(object[prop])) addSubProxy(object[prop], handler);
+                object[prop] = new Proxy(object[prop], handler);
+            }
+        }
+        object = new Proxy(object, handler)
+    }
+
+//是不是一个pure object,意思就是object里面没有再嵌套object了
+    function isPureObject(object) {
+        if (typeof object!== 'object') {
+            return false;
+        } else {
+            for (let prop in object) {
+                if (typeof object[prop] == 'object') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+let object = {
+    name: {
+        first: {
+            four: 5,
+            second: {
+                third: 'ssss'
+            }
+        }
+    },
+    class: 5,
+    arr: [1, 2, {arr1:10}],
+    age: {
+        age1: 10
+    }
+}
+//这是一个嵌套了对象和数组的数组
+let objectArr = [{name:{first:'ss'}, arr1:[1,2]}, 2, 3, 4, 5, 6]
+
+//这是proxy的handler
+let handler = {
+    get(target, property) {
+        console.log('get:' + property)
+        return Reflect.get(target, property);
+    },
+    set(target, property, value) {
+        console.log('set:' + property + '=' + value);
+        return Reflect.set(target, property, value);
+    }
+}
+//变成监听对象
+object = toDeepProxy(object, handler);
+objectArr = toDeepProxy(objectArr, handler);
+
+//进行一系列操作
+console.time('pro')
+objectArr.length
+objectArr[3];
+objectArr[2]=10
+objectArr[0].name.first = 'ss'
+objectArr[0].arr1[0]
+object.name.first.second.third = 'yyyyy'
+object.class = 6;
+object.name.first.four
+object.arr[2].arr1
+object.age.age1 = 20;
+console.timeEnd('pro')
+
+```
+
+2.6.3 defineProperty和proxy的对比
+
+1. defineProperty是es5的标准,proxy是es6的标准;
+2. proxy可以监听到数组索引赋值,改变数组长度的变化;
+3. proxy是监听对象,不用深层遍历,defineProperty是监听属性;
+3. 利用defineProperty实现双向数据绑定(vue2.x采用的核心)
+4. 利用proxy实现双向数据绑定(vue3.x会采用)
+
+
+# 3.数组
+## 3.1 扁平化n维数组
+---
+```javascriot
+[1,[2,3]].flat(1) //[1,2,3]
+[1,[2,3,[4,5]]].flat(2) //[1,2,3,4,5]
+[1,[2,3,[4,5]]].toString()  //'1,2,3,4,5'
+[1[2,3,[4,5[...]].flat(Infinity) //[1,2,3,4...n]
+
+```
+
+Array.flat(n)是ES10扁平数组的api,n表示维度,n值为Infinity时维度为无限大
+
+
+2. 开始篇
+```javascript
+let newArr = []
+function flatten (arr) {
+  for (let i = 0; i< arr.length; i++) {
+    if (typeof arr[i] == 'object' ) {
+      flatten(arr[i])
+    } else {
+      newArr.push(arr[i])
+    }
+  }
+}
+
+// 实质是利用递归和数组合并方法concat实现扁平
+
+function flatten2(arr) {
+  while(arr.some(item=>Array.isArray(item))) {
+    arr = [].concat(...arr)
+  }
+  return arr
+}
+```
+
+## 3.2 去重
+---
+```javascript
+Array.from(new Set([1,2,3,3,4,4])) //[1,2,3,4]
+[...new Set([1,2,3,3,4,4])] //[1,2,3,4]
+
+```
+set是ES6新出来的一种一种定义不重复数组的数据类型 Array.from是将类数组转化为数组 ...是扩展运算符,将set里面的值转化为字符串 
+2. 开始篇
+
+```javascript
+Array.prototype.distinct = function() {
+    const map = {}
+    const result = []
+    for (const n of this) {
+        if (!(n in map)) {
+            map[n] = 1
+            result.push(n)
+        }
+    }
+    return result
+}
+[1,2,3,3,4,4].distinct(); //[1,2,3,4]
+
+```
+## 3.3排序
+1. 终极篇
+```javascript
+[1,2,3,4].sort((a, b) => a - b); // [1, 2,3,4],默认是升序
+[1,2,3,4].sort((a, b) => b - a); // [4,3,2,1] 降序
+
+```
+sort是js内置的排序方法,参数为一个函数 
+2. 开始篇 冒泡排序:
+```javascript
+let arr = [9, 10, 1, 4, 89, 23];
+Array.prototype.bubblingSort = function() {
+  for (let i = 0; i < arr.length; i++) {
+    let flag = true;
+    for (let j = 1; j < arr.length - i; j++) {
+      if (arr[j-1]>arr[j]) {
+       [arr[j-1], arr[j]] = [arr[j], arr[j-1]]
+        flag = false;
+      }
+    }
+    if (flag) break;
+  }
+  return arr
+}
+console.log(arr.bubblingSort());
+```
+
+```javascript
+    Array.prototype.selectSort=function () {
+        let arr=this,
+            len = arr.length;
+        for (let i = 0, len = arr.length; i < len; i++) {
+    for (let j = i, len = arr.length; j < len; j++) {
+      if (arr[i] > arr[j]) {
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+  }
+    return arr;
+  }
+  [1,2,3,4].selectSort() //[1,2,3,4] 
+
+```
+
+## 3.4最大值
+---
+1. 终极篇
+```javascript
+Math.max(...[1,2,3,4]) //4
+Math.max.apply(this,[1,2,3,4]) //4
+[1,2,3,4].reduce( (prev, cur,curIndex,arr)=> {
+ return Math.max(prev,cur);
+},0) //4
+
+```
+
+Math.max()是Math对象内置的方法,参数是字符串;
+reduce是ES5的数组api,参数有函数和默认初始值;
+函数有四个参数,pre(上一次的返回值),cur(当前值),curIndex(当前值索引),arr(当前数组)
+2.开始篇
+先排序再取值
+
+
+## 3.5求和
+---
+1. 终极篇
+```javascript
+[1,2,3,4].reduce(function (prev, cur) {
+   return prev + cur;
+ },0) //10 
+
+```
+2. 开始篇
+```javascript
+function sum(arr) {
+  var len = arr.length;
+  if(len == 0){
+    return 0;
+  } else if (len == 1){
+    return arr[0];
+  } else {
+    return arr[0] + sum(arr.slice(1));
+  }
+}
+sum([1,2,3,4]) //10
+
+```
+利用slice截取改变数组,再利用递归求和
+
+## 3.6合并
+---
+1. 终极篇
+```javascript
+[1,2,3,4].concat([5,6]) //[1,2,3,4,5,6]
+[...[1,2,3,4],...[4,5]] //[1,2,3,4,5,6]
+let arrA = [1, 2], arrB = [3, 4]
+Array.prototype.push.apply(arrA, arrB))//arrA值为[1,2,3,4]
+```
+
+## 3.7判断是否包含值
+---
+1. 终极篇
+```javascript
+  [1,2,3].includes(4) //false
+[1,2,3].indexOf(4) //-1 如果存在换回索引
+[1, 2, 3].find((item)=>item===3)) //3 如果数组中无值返回undefined
+[1, 2, 3].findIndex((item)=>item===3)) //2 如果数组中无值返回-1
+
+```
+2. 开始篇
+```javascript
+[1,2,3].some(item=>{
+  return item===3
+}) //true 如果不包含返回false
+
+```
+
+## 3.8类数组转化
+---
+1. 终极篇
+```javascript
+Array.prototype.slice.call(arguments) //arguments是类数组(伪数组)
+Array.prototype.slice.apply(arguments)
+Array.from(arguments)
+[...arguments]
+
+```
+类数组:表示有length属性,但是不具备数组的方法
+call,apply:是改变slice里面的this指向arguments,所以arguments也可调用数组的方法
+Array.from是将类似数组或可迭代对象创建为数组
+...是将类数组扩展为字符串,再定义为数组
+2. 开始篇
+```javascript
+Array.prototype.slice = function(start,end){  
+      var result = new Array();  
+      start = start || 0;  
+      end = end || this.length; //this指向调用的对象，当用了call后，能够改变this的指向，也就是指向传进来的对象，这是关键  
+      for(var i = start; i < end; i++){  
+           result.push(this[i]);  
+      }  
+      return result;  
+ } 
+
+```
+
+## 3.9每一项设置值
+---
+1. 终极篇
+```javascript
+[1,2,3].fill(false) //[false,false,false] 
+
+```
+fill是ES6的方法 
+2. 开始篇
+```javascript
+[1,2,3].map(() => 0)
+
+```
+
+## 3.10每一项是否满足
+---
+```javascript
+[1,2,3].every(item=>{return item>2}) //false
+
+```
+every是ES5的api,每一项满足返回 true
+
+## 3.11有一项满足
+---
+```javascript
+[1,2,3].some(item=>{return item>2}) //true
+
+```
+
+## 3.12 过滤数组
+---
+```javascript
+[1,2,3].filter(item=>{return item>2}) //[3]
+```
+filter是ES5的api,返回满足添加的项的数组
+
+## 3.13对象和数组转化
+---
+```javascript
+Object.keys({name:'张三',age:14}) //['name','age']
+Object.values({name:'张三',age:14}) //['张三',14]
+Object.entries({name:'张三',age:14}) //[[name,'张三'],[age,14]]
+Object.fromEntries([name,'张三'],[age,14]) //ES10的api,Chrome不支持 , firebox输出{name:'张三',age:14}
+
+```
+## 3.14 对象数组
+---
+```javascript
+[{count:1},{count:2},{count:3}].reduce((p, e)=>p+(e.count), 0)
+
+```
+
+# 6. 设计模式
+
+设计模式如果应用到项目中，可以实现代码的复用和解耦，提高代码质量。 本文主要介绍14种设计模式 写UI组件,封装框架必备
+
+6.1 简单工厂模式
+---
+1.定义：又叫静态工厂方法，就是创建对象，并赋予属性和方法
+2.应用：抽取类相同的属性和方法封装到对象上
+3.代码
+
+
