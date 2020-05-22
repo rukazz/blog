@@ -1371,4 +1371,181 @@ Object.fromEntries([name,'张三'],[age,14]) //ES10的api,Chrome不支持 , fire
 2.应用：抽取类相同的属性和方法封装到对象上
 3.代码
 
+## 1.工厂
+```javascript
+class User {
+  constructor(name = "", viewPage = []) {
+    if (new.target === "User") {
+      throw new Error("不能实例化抽象类");
+    }
+    this.name = name;
+    this.viewPage = viewPage;
+  }
+}
+
+class UserFactory extends User {
+  constructor(name, viewPage) {
+    super(name, viewPage);
+  }
+  create(role) {
+    switch (role) {
+      case "superAdmin":
+        return new UserFactory("superAdmin");
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+let user = new UserFactory();
+let superAdmin = user.create("superAdmin");
+
+console.log(superAdmin);
+```
+应用场景：JQuery中的$、Vue.component异步组件、React.createElement等
+
+
+
+## 2. 单例模式
+> 保证一个类仅有一个实例，并提供一个访问它的全局访问点，一般登录、购物车等都是一个单例。
+
+```javascript
+class Singleton {
+  login() {}
+
+  static getInstance = (function () {
+    let instance = null;
+    return function (name) {
+      if (instance) {
+        instance = new Singleton();
+      }
+      return instance;
+    };
+  })();
+}
+
+// Singleton.getInstance = (function(){
+//   let instance = null;
+//   return function(name) {
+//     if (instance) {
+//       instance = new Singleton()
+//     }
+//     return instance
+//   }
+// })()
+
+const a = Singleton.getInstance("a");
+const b = Singleton.getInstance("b");
+
+console.log(a === b);
+```
+应用场景：JQuery中的$、Vuex中的Store、Redux中的Store等
+
+## 3. 适配器模式
+> 用来解决两个接口不兼容问题，由一个对象来包装不兼容的对象，比如参数转换，允许直接访问
+
+1. 接口适配 2.参数适配 3. 数据适配
+```javascript
+class Target {
+  small() {
+    console.log("small");
+  }
+}
+
+class Source {
+  big() {
+    console.log("big");
+  }
+}
+
+class Adapter extends Target {
+  constructor(source) {
+    super();
+    this.source = source;
+  }
+  small() {
+    this.source.big();
+  }
+}
+
+let source = new Source();
+let target = new Adapter(source);
+
+target.small()
+```
+应用场景：Vue的computed、旧的JSON格式转换成新的格式等
+
+## 4. 装饰器模式
+> 在不改变对象自身的基础上，动态的给某个对象添加新的功能，同时又不改变其接口
+
+
+
+
+
+# js计时器
+ - javascript引擎只有一个线程，迫使异步事件只能加入队列去等待执行。
+ - 在执行异步代码的时候，setTimeout 和setInterval 是有着本质区别的。 
+ - 如果计时器被正在执行的代码阻塞了，它将会进入队列的尾部去等待执行直到下一次可能执行的时间出现（可能超过设定的延时时间）。
+ - 如果interval回调函数执行需要花很长时间的话(比指定的延时长)，interval有可能没有延迟背靠背地执行。
+
+# 闭包
+红宝书（p178）中闭包的定义： **闭包是指有权访问另外一个函数作用域中的变量的函数，**
+ - 是一个函数
+ - 能访问另外一个函数作用域中的变量
+
+对于闭包有下面三个特性：
+ - 1、闭包可以访问当前函数以外的变量
+```javascript
+function getOuter(){
+  var date = '815';
+  function getDate(str){
+    console.log(str + date);  //访问外部的date
+  }
+  return getDate('今天是：'); //"今天是：815"
+}
+getOuter();
+```
+ - 2、即使外部函数已经返回，闭包仍能访问外部函数定义的变量
+```javascript
+function getOuter(){
+  var date = '815';
+  function getDate(str){
+    console.log(str + date);  //访问外部的date
+  }
+  return getDate;     //外部函数返回
+}
+var today = getOuter();
+today('今天是：');   //"今天是：815"
+today('明天不是：');   //"明天不是：815"
+
+```
+ - 3、闭包可以更新外部变量的值
+```javascript
+function updateCount(){
+  var count = 0;
+  function getCount(val){
+    count = val;
+    console.log(count);
+  }
+  return getCount;     //外部函数返回
+}
+var count = updateCount();
+count(815); //815
+count(816); //816
+```
+## 作用域链
+Javascript中有一个执行上下文(execution context)的概念，它定义了变量或函数有权访问的其它数据，决定了他们各自的行为。每个执行环境都有一个与之关联的变量对象，环境中定义的所有变量和函数都保存在这个对象中
+
+作用域链：**当访问一个变量时，解释器会首先在当前作用域查找标示符，如果没有找到，就去父作用域找，直到找到该变量的标示符或者不在父作用域中，这就是作用域链。**
+
+作用域链和原型继承查找时的区别：如果去查找一个普通对象的属性，但是在当前对象和其原型中都找不到时，会返回undefined；但查找的属性在作用域链中不存在的话就会抛出ReferenceError
+
+
+
+
+MDN 对闭包的定义为：**闭包是指那些能够访问自由变量的函数**。
+
+自由变量： 
+**指在函数中使用的，但既不是函数参数arguments也不是函数的局部变量的变量，其实就是另外一个函数作用域中的变量。**
 

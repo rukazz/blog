@@ -1,16 +1,23 @@
-let a = Math.max.apply(this, [2, 6, 7, 10]);
-let d = [2, 10, 45].reduce((prev, cur) => {
-  return prev + cur;
-});
-
-function sum(arr) {
-  if (arr.length == 0) {
-    return 0;
-  } else if (arr.length == 1) {
-    return arr[0];
-  } else {
-    return arr[0] + sum(arr.slice(1));
+function getOuter() {
+  var date = "815";
+  function getDate(str) {
+    console.log(str + date);
   }
+  return getDate;
 }
-let arr = [1, 2, 3, 4];
-console.log(arr.slice(0));
+
+let today = getOuter();
+today('ddd')
+today('tttt')
+
+function updateCount() {
+  let count = 0
+  function getCount(val) {
+    count = val
+  }
+  return getCount
+}
+
+let count = updateCount()
+count(11)
+count(200)
