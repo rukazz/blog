@@ -1541,6 +1541,10 @@ Javascript中有一个执行上下文(execution context)的概念，它定义了
 
 作用域链和原型继承查找时的区别：如果去查找一个普通对象的属性，但是在当前对象和其原型中都找不到时，会返回undefined；但查找的属性在作用域链中不存在的话就会抛出ReferenceError
 
+作用域链的顶端是全局对象，在全局环境中定义的变量就会绑定到全局对象中。
+
+
+
 
 
 
@@ -1548,4 +1552,57 @@ MDN 对闭包的定义为：**闭包是指那些能够访问自由变量的函�
 
 自由变量： 
 **指在函数中使用的，但既不是函数参数arguments也不是函数的局部变量的变量，其实就是另外一个函数作用域中的变量。**
+
+
+# Promise详解
+  Promise是一个对象，保存着未来将要结束的事件。她有两个特征，引用阮一峰老师的描述就是：
+
+   - (1）对象的状态不受外界影响。Promise对象代表一个异步操作，有三种状态：pending（进行中）、fulfilled（已成功）和rejected（已失败）。只有异步操作的结果，可以决定当前是哪一种状态，任何其他操作都无法改变这个状态。这也是Promise这个名字的由来，它的英语意思就是“承诺”，表示其他手段无法改变。
+  - (2）一旦状态改变，就不会再变，任何时候都可以得到这个结果。Promise对象的状态改变，只有两种可能：从pending变为fulfilled和从pending变为rejected。只要这两种情况发生，状态就凝固了，不会再变了，会一直保持这个结果，这时就称为 resolved（已定型）。如果改变已经发生了，你再对Promise对象添加回调函数，也会立即得到这个结果。这与事件（Event）完全不同，事件的特点是，如果你错过了它，再去监听，是得不到结果的。
+
+# 1.Promises/A+规范要求
+## 1.1 Promise状态
+一个promise有切只有一个状态（pending,fulfilled, rejected)
+### 2.1.1 pending状态时
+可能转变为fulfilled/rejected
+### 2.1.2 fulfilled状态
+ - 不能再改变为其他状态
+ - 必须有一个value，且不可改变
+### 2.1.3 rejected状态
+ - 不能再改变为其他状态
+ - 必须有一个reason，且不可改变
+
+## then方法
+一个 promise 必须提供一个 then 方法，用来获取当前或最终的 value 或 reason：
+一个 promise 的 then 方法接受两个参数：
+```javascript
+promise.then(onFulfilled, onRejected)
+```
+### 2.2.1 onFulfilled 和 onRejected 都是可选参数：
+ - 如果 onFulfilled 不是函数，它会被忽略
+ -  如果 onRejected 不是函数，它会被忽略
+### 2.2.2 如果 onFulfilled 是一个函数：
+ -  它一定是在 promise 是 fulfilled 状态后调用，并且接受一个参数 value
+ -   它一定是在 promise 是 fulfilled 状态后调用
+ -   它最多被调用一次
+
+### 2.2.3 如果 onRejected 是一个函数：
+ - 它一定在 promise 是 rejected 状态后调用，并且接受一个参数 reason
+ - 它一定在 promise 是 rejected 状态后调用
+ - 它最多被调用一次
+
+onFulfilled 或 onRejected 只在执行环境堆栈只包含平台代码之后调用 [3.1]
+
+onFulfilled 和 onRejected 会作为函数形式调用 (也就是说，默认 this 指向 global，严格模式 undefined) [3.2]
+
+2.2.6 promise 的 then 可以链式调用多次
+ - 如果或当 promise 转态是 fulfilled 时，所有的 onFulfilled 回调回以他们注册时的顺序依次执行
+ - 如果或当 promise 转态是 rejected 时，所有的 onRejected 回调回以他们注册时的顺序依次执行
+
+
+
+
+
+
+
 
