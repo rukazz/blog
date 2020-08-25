@@ -1,3 +1,27 @@
+## 1. Hooks
+
+### 1.1 Hook 是什么
+
+Hook 是 React 16.8 的新增特性。它可以让你在不编写 class 的情况下使用 state 以及其他的 React 特性。useState 得到的状态，对于组件来说是一种外部传入的数据，和 props、context 没有本质的区别。useState 声明的状态，实际由 React 内核进行维护，传递给函数式组件。hooks 时代的函数式组件依然是【外部数据=>view】的纯函数。
+
+### 1.2 为什么要使用 Hook
+
+- 在组件之间复用状态逻辑很难(redux 的 connect 方法)。Hook 使你在无需修改组件结构的情况下复用状态逻辑。
+- 使函数式组件更加声明式。取代了生命周期函数，减少了 API，代码更加声明化。
+- class 中 this 的问题。渲染旧状态的组件树时，useState 返回旧的状态值；渲染新状态的组件树时，useState 返回不同的状态值,而如果你用了 class 组件，就很容易出问题，因为“多个版本”的组件树，其中的 class 实例是共享的，你在某个组件树中修改了 this.A，其他组件树能够感知到。useRef 也是同理，ref 会造成组件树之间相互影响，它是 react 团队开的后门，建议谨慎使用。
+
+### 1.3 Hooks 对应的生命周期
+
+我们利用 useState、 useEffect() 和 useLayoutEffect() 来模拟实现生命周期。实现状态同步，而不是响应生命周期事件。  
+`constructor() -> static getDerivedStateFromProps() ->render()->componentDidMount()`
+
+- `constructor`, 函数组件不需要构造函数。通过调用`useState`来初始化 state
+- `getDerivedStateFromProps` 在渲染时 安排一次更新
+- shouldComponentUpdate：详见 下方 React.memo.
+- render：这是函数组件体本身。
+- componentDidMount, componentDidUpdate, componentWillUnmount：useEffect Hook 可以表达所有这些的组合。
+- getSnapshotBeforeUpdate，componentDidCatch 以及 getDerivedStateFromError：目前还没有这些方法的 Hook 等价写法，但很快会被添加。
+
 ## useState 的实现原理
 
 我们使用 useState 的时候，会返回反映此时变量的状态和用更新状态的函数。当状态被更新的时候，自动调用了 render 方法来触发视图更新。
