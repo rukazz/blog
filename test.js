@@ -213,6 +213,7 @@ Promise.prototype.testAll = (arg) => {
      Promise.resolve(arg[i]).then((res) => {
        result[i] = res
        if (++current == length) {
+         console.log('test')
          resolve(result)
        } 
      })
